@@ -4,9 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; media-src 'self' blob:; connect-src 'self' wss: ws:; img-src 'self' data:; font-src 'self'" />
   <title>MyTel WebPhone</title>
-  <link rel="icon" type="image/svg+xml" href="/themes/mytel/images/mytel-emblem.svg" />
-  <link rel="stylesheet" href="phone.css?v=2" />
+  <link rel="icon" type="image/svg+xml" href="assets/emblem.svg" />
+  <link rel="stylesheet" href="phone.css?v=5" />
   <script src="vendor/jssip.min.js"></script>
 </head>
 <body>
@@ -16,7 +17,7 @@
   <!-- ===== brand header ===== -->
   <header class="mt-header">
     <div class="mt-brand">
-      <img src="/themes/mytel/images/mytel-emblem.svg" alt="MyTel" class="mt-emblem" />
+      <img src="assets/emblem.svg" alt="MyTel" class="mt-emblem" />
       <div class="mt-brand-text">
         <b>MyTel WebPhone</b>
         <small>mytel.one &middot; PBX Softphone</small>
@@ -48,7 +49,7 @@
     <div id="certHelp" class="mt-notice hidden">
       <b>One-time security step</b>
       <p>If connect fails with a TLS error, the browser has not yet trusted this PBX's certificate.
-      Open <a id="certLink" href="https://192.168.8.171:8089/ws" target="_blank" rel="noopener">the secure WebSocket endpoint</a>,
+      Open <a id="certLink" href="#" target="_blank" rel="noopener">the secure WebSocket endpoint</a>,
       accept the certificate warning, then come back and press <i>Connect</i> again.</p>
     </div>
   </section>
@@ -72,6 +73,23 @@
         <button data-d="7">7<span>PQRS</span></button><button data-d="8">8<span>TUV</span></button><button data-d="9">9<span>WXYZ</span></button>
         <button data-d="*" >*<span>&nbsp;</span></button><button data-d="0">0<span>+</span></button><button data-d="#">#<span>&nbsp;</span></button>
       </div>
+
+      <!-- settings row -->
+      <div class="settings-row">
+        <label class="sel-label" for="micSelect">Mic
+          <select id="micSelect" class="mt-select"><option value="">Default</option></select>
+        </label>
+        <div class="hist-controls">
+          <button id="btnHistory" class="mt-btn ghost small" type="button" title="Recent calls">History</button>
+          <button id="btnClearHist" class="mt-btn ghost small hidden" type="button" title="Clear call history">Clear</button>
+        </div>
+      </div>
+
+      <!-- history panel -->
+      <div id="histPanel" class="hist hidden">
+        <div class="hist-head"><b>Recent calls</b><span id="histCount"></span></div>
+        <ul id="histList"></ul>
+      </div>
     </section>
 
     <!-- active call panel -->
@@ -84,6 +102,7 @@
       <div id="callState" class="state"></div>
       <div class="call-actions">
         <button id="btnMute"  class="mt-btn ghost" type="button">Mute</button>
+        <button id="btnHold"  class="mt-btn ghost" type="button">Hold</button>
         <button id="btnHang"  class="mt-btn danger" type="button">End call</button>
       </div>
       <!-- incoming -->
@@ -102,11 +121,12 @@
     <footer class="mt-foot">
       <span>Not for emergency calls.</span>
       <span id="uaInfo"></span>
+      <span id="verInfo"></span>
     </footer>
   </main>
 
 </div>
 
-<script src="phone.js?v=4"></script>
+<script src="phone.js?v=5"></script>
 </body>
 </html>
