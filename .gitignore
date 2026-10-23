@@ -1,0 +1,8 @@
+# never commit real credentials or runtime artifacts
+server/pjsip_custom.conf
+consult-handoff.json
+consult-out.json
+*.bak
+__pycache__/
+.mimosa/
+proposal.json
