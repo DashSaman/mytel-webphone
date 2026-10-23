@@ -1,0 +1,13 @@
+MyTel WebPhone
+Copyright (c) 2026 MyTel (mytel.one)
+
+This product includes software developed by third parties:
+
+- JsSIP 3.10.1 — Copyright (c) 2012-2023 José Millán Soto and contributors,
+  licensed under the MIT License (see LICENSE-JSSIP). Vendored unmodified at
+  app/vendor/jssip.min.js
+  (SHA-256 0c9a19fa52a0450127847c566a05340ad57120c756d9c63e1f4e252013590b1b).
+
+The overall static-SPA + localStorage softphone approach is inspired by
+cloudsip.app (https://github.com/CONNXTA/cloudsip.app, GPL-3). No source code
+or assets from that project are included here.
