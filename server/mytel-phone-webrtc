@@ -1,0 +1,36 @@
+#!/bin/bash
+# mytel-phone-webrtc — enable WebRTC for a FreePBX extension (database approach)
+# Usage: mytel-phone-webrtc <extension> [db_password]
+# Run as root on the PBX server. Survives retrieve_conf regeneration.
+set -euo pipefail
+
+EXT="$1"
+DBPASS="${2:-CdptPoolHs4m}"
+
+[[ -z "$EXT" ]] && { echo "usage: $0 <extension> [db_password]" >&2; exit 1; }
+[[ ! "$EXT" =~ ^[0-9]{1,6}$ ]] && { echo "extension must be numeric" >&2; exit 1; }
+
+# verify the extension exists in FreePBX
+COUNT=$(mysql -uasteriskuser -p"$DBPASS" asterisk -N -e "SELECT COUNT(*) FROM sip WHERE id='$EXT'" 2>/dev/null)
+[[ "$COUNT" -lt 1 ]] && { echo "extension $EXT not found in FreePBX" >&2; exit 1; }
+
+mysql -uasteriskuser -p"$DBPASS" asterisk <<SQLEOF
+UPDATE sip SET data='transport-wss' WHERE id='$EXT' AND keyword='transport';
+UPDATE sip SET data='yes' WHERE id='$EXT' AND keyword='ice_support';
+UPDATE sip SET data='yes' WHERE id='$EXT' AND keyword='use_avpf';
+UPDATE sip SET data='dtls' WHERE id='$EXT' AND keyword='media_encryption';
+UPDATE sip SET data='yes' WHERE id='$EXT' AND keyword='dtls_auto_generate_cert';
+UPDATE sip SET data='fingerprint' WHERE id='$EXT' AND keyword='dtls_verify';
+UPDATE sip SET data='actpass' WHERE id='$EXT' AND keyword='dtls_setup';
+UPDATE sip SET data='yes' WHERE id='$EXT' AND keyword='rtcp_mux';
+UPDATE sip SET data='no' WHERE id='$EXT' AND keyword='direct_media';
+UPDATE sip SET data='yes' WHERE id='$EXT' AND keyword='force_rport';
+UPDATE sip SET data='yes' WHERE id='$EXT' AND keyword='rewrite_contact';
+UPDATE sip SET data='yes' WHERE id='$EXT' AND keyword='rtp_symmetric';
+INSERT IGNORE INTO sip (id, keyword, data, flags) VALUES ('$EXT','webrtc','yes',0);
+SQLEOF
+
+/var/lib/asterisk/bin/retrieve_conf >/dev/null 2>&1
+asterisk -rx 'pjsip reload' >/dev/null 2>&1
+echo "OK: $EXT is now WebRTC-ready (transport-wss, dtls, ice)"
+echo "Verify: asterisk -rx 'pjsip show endpoint $EXT' | grep webrtc"
