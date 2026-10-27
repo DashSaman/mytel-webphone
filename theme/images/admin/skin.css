@@ -1,0 +1,903 @@
+@charset "UTF-8";
+/* ============================================================
+   MyTel skin for the STOCK IssabelPBX console (v19, 2026-10-05)
+   Policy: stock Issabel words, structure, direction (LTR) and
+   behavior are untouched — this file only re-skins the visuals:
+   brand navbar, card surfaces, controls, typography, tooltips.
+   v17: navbar submenus keep stock metrics/spacing (dropdown arrow
+   never touches the label; burger panel boxes fill the width).
+   v18: tiny Persian subtitles under every dropdown item (pure CSS
+   ::after on the mapped stock hrefs — DOM text stays stock) and a
+   visible active/current item replacing stock's dark purple.
+   v19: every remaining stock purple (#4b0884) is replaced by the
+   MyTel navy/blue; subtitle styles for the additive sub.js layer
+   (form labels, record nav, page title, "?" bubbles).
+   ============================================================ */
+
+:root {
+    --mt-navy: #0B1526;
+    --mt-primary: #2E3194;
+    --mt-primary-strong: #26287C;
+    --mt-accent: #FF8A00;
+    --mt-text: #232A35;
+    --mt-muted: #64708A;
+    --mt-border: #E8ECF3;
+    --mt-surface: #FFFFFF;
+    --mt-bg: #F3F5F9;
+}
+
+/* ---------- base ---------- */
+body {
+    font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--mt-text);
+    background: var(--mt-bg);
+}
+h1, h2 { font-size: 16px; font-weight: 700; line-height: 24px; }
+h3 { font-size: 14.5px; font-weight: 700; }
+h4, h5 { font-size: 14px; font-weight: 700; }
+small, .help, .help-block { font-size: 12px; line-height: 18px; }
+a { color: var(--mt-primary); }
+
+/* ---------- top navbar (brand) ---------- */
+.navbar.is-dark {
+    background: linear-gradient(90deg, var(--mt-navy) 0%, #142441 60%, #1B2550 100%);
+    box-shadow: 0 2px 14px rgba(11,21,38,.35);
+    min-height: 52px;
+}
+.navbar-brand img, .navbar-item img { max-height: 34px; height: 34px; width: auto; }
+/* emblem in the brand navbar — always visible, never clipped */
+.navbar-brand .navbar-item:first-child img,
+a.navbar-brand > img,
+.navbar-brand img[src*="mytel-emblem"],
+.navbar-brand img[src*="tango"] {
+    display: inline-block !important;
+    visibility: visible !important;
+    max-height: 34px !important;
+    min-height: 24px !important;
+    min-width: 24px !important;
+    width: auto !important;
+    opacity: 1 !important;
+    filter: drop-shadow(0 2px 6px rgba(30,136,229,.35));
+}
+.navbar-brand { overflow: visible !important; }
+a.navbar-item.has-text-weight-bold { gap: 10px; }
+.navbar.is-dark .navbar-item, .navbar.is-dark .navbar-link {
+    color: #AAB6CE;
+    font-weight: 600;
+    font-size: 13px;
+    line-height: 20px;
+}
+.navbar.is-dark .navbar-item { padding: 6px 12px; }
+/* stock Bulma reserves 2.5em of right padding on .navbar-link so the
+   ▾ arrow (::after pinned near the right edge) stays clear of the
+   label — never shrink it, the arrow would overlap the text */
+.navbar.is-dark .navbar-link { padding: 6px 40px 6px 12px; }
+.navbar.is-dark .navbar-item:hover, .navbar.is-dark .navbar-link:hover,
+.navbar-item.has-dropdown:hover .navbar-link, .navbar-link.is-active {
+    color: #FFB84D;
+    background: rgba(255,255,255,.06);
+}
+/* Apply Config — MyTel branded gradient pill with pulse */
+#button_reload, .navbar-item.is-warning, .navbar-item.is-danger {
+    background: linear-gradient(135deg, #FF8A00 0%, #E67A00 100%) !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    box-shadow: 0 3px 12px rgba(255,138,0,.35), inset 0 1px 0 rgba(255,255,255,.2) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    padding: 8px 20px !important;
+    margin: 0 6px !important;
+    transition: filter .18s ease, transform .15s ease !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+#button_reload:hover, .navbar-item.is-warning:hover, .navbar-item.is-danger:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 18px rgba(255,138,0,.45), inset 0 1px 0 rgba(255,255,255,.25) !important;
+    color: #fff !important;
+}
+#button_reload:active, .navbar-item.is-warning:active {
+    transform: translateY(0);
+    filter: brightness(.95);
+}
+.animate__animated.animate__tada { animation: none !important; } /* kill stock tada jitter */
+
+/* dropdown menus: stock geometry (the 3-column 600px multicolumn grid
+   only fits with ZERO horizontal padding/border — any side chrome drops
+   it to 2 columns and the list starts scrolling); theme = colors only */
+.navbar-dropdown {
+    background: #fff !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: 0 12px 32px rgba(21,27,61,.14) !important;
+    padding: 8px 0 !important;
+    min-width: 230px;
+}
+.navbar-dropdown .navbar-item {
+    color: var(--mt-text) !important;
+    min-height: 0;                 /* stock metric — taller rows push
+                                      the burger panel past its height */
+    padding: 8px 24px !important;  /* stock indent */
+    font-size: 13px;
+    line-height: 17px;             /* stock row ≈33px */
+}
+/* ---------- Persian one-line subtitles under dropdown items ----------
+   Pure CSS decoration: stock <a> text and hrefs stay untouched; the
+   Persian line exists only as ::after content matched by stock href
+   suffix. Items without a mapping render no pseudo-element at all. */
+@font-face {
+    font-family: 'VazirmatnSub';
+    src: url('fonts/vazirmatn-regular.woff') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+/* row budget: Applications = 25 items = 9 rows in 3 columns; the stock
+   box max-height is 420px, so a row must stay <= ~44px — taller rows
+   summon the internal scrollbar, which eats ~10px of width and knocks
+   the third 200px float column to the next line (stock engine) */
+.navbar.is-dark .navbar-dropdown a.navbar-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    padding: 4px 24px 5px !important;
+    line-height: 15px;              /* beats .navbar.is-dark .navbar-item's 20px */
+}
+.navbar-dropdown a.navbar-item::after {
+    display: block;
+    font-family: 'VazirmatnSub', 'Vazirmatn', Tahoma, sans-serif;
+    font-size: 10px;
+    line-height: 13px;
+    font-weight: 500;
+    color: var(--mt-muted);
+    direction: rtl;
+    text-align: left;              /* sit under the English label's edge */
+    opacity: .92;
+}
+/* hover must beat stock's dark-purple !important (higher specificity) */
+.navbar.is-dark .navbar-dropdown a.navbar-item:hover,
+.navbar.is-dark .navbar-dropdown a.navbar-item:active,
+.navbar.is-dark .navbar-dropdown a.navbar-item:focus {
+    background: #EEF1FA !important;
+    color: var(--mt-primary) !important;
+}
+/* ---------- de-purple: stock paints #4b0884 (!important) on the
+   remaining navbar states — MyTel navy replaces every one ---------- */
+.navbar.is-dark .navbar-link:focus,
+.navbar.is-dark .navbar-link:active,
+.navbar.is-dark .navbar-link:hover,
+.navbar.is-dark .navbar-item.has-dropdown:hover .navbar-link,
+.navbar.is-dark .navbar-item.is-active {
+    background: rgba(255,255,255,.10) !important;
+    color: #FFB84D !important;
+}
+.navbar.is-dark .navbar-item:focus,
+.navbar.is-dark .navbar-item:active,
+.navbar.is-dark .navbar-item:hover {
+    background: rgba(255,255,255,.10) !important;
+    color: #FFB84D !important;
+}
+/* lavender striped rows, purple tabs/pagination/chosen highlights and
+   jQuery-UI purple widgets → MyTel tints (background AND gradients) */
+.table.is-striped tbody tr:not(.is-selected):nth-child(2n),
+.table.is-striped tbody tr:not(.is-selected):nth-child(2n) td {
+    background: #F5F7FC !important;
+    background-image: none !important;
+}
+.tabs li.is-active a, .tabs a:hover,
+.fpbx-tabs li.ui-tabs-selected a, .fpbx-tabs li.ui-tabs-active a,
+ul.tabs li.ui-tabs-selected a, ul.tabs li.ui-tabs-active a {
+    color: var(--mt-primary) !important;
+    border-color: var(--mt-primary) !important;
+    background-image: none !important;
+}
+.pagination-link.is-current {
+    background: var(--mt-primary) !important;
+    border-color: var(--mt-primary) !important;
+    color: #fff !important;
+}
+.chosen-container .chosen-results li.highlighted,
+.chosen-container .chosen-results li.result-selected {
+    background: rgba(46,49,148,.10) !important;
+    background-image: none !important;
+    color: var(--mt-primary) !important;
+}
+.ui-state-highlight, .ui-state-hover, .ui-state-active, .ui-state-focus,
+.ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover,
+tr.ui-state-highlight td {
+    background: rgba(46,49,148,.10) !important;
+    background-image: none !important;
+    border-color: #D9DEF0 !important;
+    color: var(--mt-primary) !important;
+}
+/* ---------- additive sub.js layer: Persian subtitles ---------- */
+/* Persian line under stock English text: the Persian word plus its own
+   mini "?" pill (hover = simple Persian explanation). Stock English
+   bubbles on the English line stay exactly as shipped. */
+.mt-sub {
+    font-family: 'VazirmatnSub', 'Vazirmatn', Tahoma, sans-serif;
+    font-weight: 500;
+    color: var(--mt-muted);
+    direction: rtl;
+    max-width: 100%;
+}
+form td .mt-sub, div.column.tdsearch .mt-sub {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;   /* LTR flex: starts at the label edge */
+    gap: 5px;
+    font-size: 11px;
+    line-height: 13px;
+    margin-top: 1px;
+    direction: ltr;                /* line hugs the LEFT edge under English */
+    text-align: left;
+    white-space: normal;
+}
+/* the Persian words keep RTL order inside their own isolate */
+.mt-sub .mt-sub-t { direction: rtl; unicode-bidi: isolate; }
+/* the mini-pill's bubble opens to the RIGHT of the ? (into the form) */
+.mt-sub .infohelp { position: relative; }
+.mt-sub .infohelp > span {
+    right: auto !important;
+    left: 20px !important;
+    top: -8px !important;
+}
+.mt-sub .mt-sub-t { min-width: 0; }
+.mt-sub .infohelp {
+    flex: 0 0 14px;
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    font-size: 9px;
+}
+.mt-sub .infohelp > span {
+    width: 300px !important;
+    font-size: 11.5px !important;
+    line-height: 1.8 !important;
+    font-weight: 400 !important;
+    white-space: normal !important;
+}
+/* page title band: the Persian sits under the English title as the same
+   white chip so both title and section headers share one language */
+h2#title { flex-wrap: wrap; }
+h2#title .mt-sub {
+    flex-basis: auto;
+    width: fit-content;
+    margin: 5px 0 -1px 14px;
+    padding: 3px 9px;
+    background: #fff;
+    border: 1px solid var(--mt-border);
+    border-radius: 7px;
+    font-size: 11.5px;
+    line-height: 15px;
+    color: #5A6580;
+    direction: ltr;
+    justify-content: flex-start;
+    white-space: nowrap;
+    display: inline-flex;
+    gap: 6px;
+}
+/* record-nav rows become two-line when they carry a subtitle */
+nav.rnav a:not(.button) .mt-sub {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    line-height: 13px;
+    color: #8A94AC;
+    margin-top: 0;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+/* Persian "?" bubble text reads right-aligned */
+.infohelp > span[dir="rtl"] { text-align: right !important; }
+/* dynamic option tables (IVR DTMF): digit box stays tiny and centered */
+input[placeholder="کلید"], input[placeholder="digits pressed"] {
+    width: 84px !important;
+    max-width: 100%;
+    text-align: center;
+    direction: ltr;
+}
+/* one-line Persian usage hint above such tables */
+.mt-note {
+    font-family: 'VazirmatnSub', 'Vazirmatn', Tahoma, sans-serif;
+    font-size: 11px;
+    line-height: 18px;
+    color: var(--mt-muted);
+    background: #F7F8FC;
+    border: 1px dashed var(--mt-border);
+    border-radius: 8px;
+    padding: 5px 10px;
+    margin: 2px 0 8px;
+    direction: rtl;
+    text-align: right;
+    max-width: 620px;
+}
+/* current page item: stock paints it rgb(75,8,132) !important (nearly
+   invisible) — replace with a MyTel tint + accent bar; background
+   shorthand so stock's purple/image cannot leak through */
+.navbar.is-dark .navbar-dropdown a.navbar-item.is-active {
+    background: linear-gradient(90deg, rgba(46,49,148,.14), rgba(46,49,148,.05)) !important;
+    color: var(--mt-primary) !important;
+    box-shadow: inset 3px 0 0 var(--mt-accent);
+    border-radius: 8px;
+    font-weight: 700;
+}
+.navbar.is-dark .navbar-dropdown a.navbar-item.is-active::after {
+    color: var(--mt-primary);
+    opacity: 1;
+}
+.navbar.is-dark .navbar-dropdown a.navbar-item:focus-visible {
+    outline: 2px solid var(--mt-primary);
+    outline-offset: -2px;
+}
+/* the mapped stock submenu items (display key -> Persian subtitle) */
+.navbar-dropdown a.navbar-item[href$="display=blacklist"]::after          { content: 'فهرست سیاه'; }
+.navbar-dropdown a.navbar-item[href$="display=cidlookup"]::after         { content: 'منابع شماره‌یابی'; }
+.navbar-dropdown a.navbar-item[href$="display=customcontextsadmin"]::after { content: 'مدیریت دسترسی'; }
+.navbar-dropdown a.navbar-item[href$="display=customdests"]::after       { content: 'مقصدهای سفارشی'; }
+.navbar-dropdown a.navbar-item[href$="display=customextens"]::after      { content: 'داخلی‌های سفارشی'; }
+.navbar-dropdown a.navbar-item[href$="display=featurecodeadmin"]::after  { content: 'کدهای خدمات'; }
+.navbar-dropdown a.navbar-item[href$="display=modules"]::after           { content: 'مدیریت ماژول‌ها'; }
+.navbar-dropdown a.navbar-item[href$="display=recordings"]::after        { content: 'پیام‌های ضبط‌شده'; }
+.navbar-dropdown a.navbar-item[href$="display=ttsadmin"]::after          { content: 'موتورهای گفتارساز'; }
+.navbar-dropdown a.navbar-item[href$="display=announcement"]::after      { content: 'اعلان صوتی'; }
+.navbar-dropdown a.navbar-item[href$="display=bosssecretary"]::after     { content: 'رئیس و منشی'; }
+.navbar-dropdown a.navbar-item[href$="display=daynight"]::after          { content: 'کنترل تماس'; }
+.navbar-dropdown a.navbar-item[href$="display=callrecording"]::after     { content: 'ضبط تماس'; }
+.navbar-dropdown a.navbar-item[href$="display=callback"]::after          { content: 'تماس بازگشتی'; }
+.navbar-dropdown a.navbar-item[href$="display=conferences"]::after       { content: 'کنفرانس‌ها'; }
+.navbar-dropdown a.navbar-item[href$="display=disa"]::after              { content: 'دسترسی بیرونی'; }
+.navbar-dropdown a.navbar-item[href$="display=dynamicfeatures"]::after   { content: 'قابلیت‌های پویا'; }
+.navbar-dropdown a.navbar-item[href$="display=extensions"]::after        { content: 'داخلی‌ها'; }
+.navbar-dropdown a.navbar-item[href$="display=findmefollow"]::after      { content: 'پیگیری تماس'; }
+.navbar-dropdown a.navbar-item[href$="display=ivr"]::after               { content: 'منوی صوتی'; }
+.navbar-dropdown a.navbar-item[href$="display=languages"]::after         { content: 'زبان‌ها'; }
+.navbar-dropdown a.navbar-item[href$="display=miscapps"]::after          { content: 'برنامه‌های متفرقه'; }
+.navbar-dropdown a.navbar-item[href$="display=miscdests"]::after         { content: 'مقصدهای متفرقه'; }
+.navbar-dropdown a.navbar-item[href$="display=paging"]::after            { content: 'پیجینگ داخلی'; }
+.navbar-dropdown a.navbar-item[href$="display=parking"]::after           { content: 'پارک تماس'; }
+.navbar-dropdown a.navbar-item[href$="display=queueprio"]::after         { content: 'اولویت صف‌ها'; }
+.navbar-dropdown a.navbar-item[href$="display=queues"]::after            { content: 'صف‌ها'; }
+.navbar-dropdown a.navbar-item[href$="display=ringgroups"]::after        { content: 'گروه‌های زنگ'; }
+.navbar-dropdown a.navbar-item[href$="display=setcid"]::after            { content: 'تنظیم شناسه'; }
+.navbar-dropdown a.navbar-item[href$="display=tts"]::after               { content: 'گفتارساز'; }
+.navbar-dropdown a.navbar-item[href$="display=timeconditions"]::after    { content: 'شرایط زمانی'; }
+.navbar-dropdown a.navbar-item[href$="display=timegroups"]::after        { content: 'گروه‌های زمانی'; }
+.navbar-dropdown a.navbar-item[href$="display=vmblast"]::after           { content: 'پیام گروهی'; }
+.navbar-dropdown a.navbar-item[href$="display=writequeuelog"]::after     { content: 'ثبت صف'; }
+.navbar-dropdown a.navbar-item[href$="display=customcontexts"]::after    { content: 'سطح دسترسی'; }
+.navbar-dropdown a.navbar-item[href$="display=dahdichandids"]::after     { content: 'شماره‌های DAHDI'; }
+.navbar-dropdown a.navbar-item[href$="display=did"]::after               { content: 'مسیرهای ورودی'; }
+.navbar-dropdown a.navbar-item[href$="display=routing"]::after           { content: 'مسیرهای خروجی'; }
+.navbar-dropdown a.navbar-item[href$="display=trunks"]::after            { content: 'ترانک‌ها'; }
+.navbar-dropdown a.navbar-item[href$="display=asteriskinfo"]::after      { content: 'اطلاعات استریسک'; }
+.navbar-dropdown a.navbar-item[href$="display=logfiles"]::after          { content: 'فایل‌های گزارش'; }
+.navbar-dropdown a.navbar-item[href$="display=extensionsettings"]::after { content: 'تنظیمات داخلی'; }
+.navbar-dropdown a.navbar-item[href$="display=index"]::after             { content: 'وضعیت سامانه'; }
+.navbar-dropdown a.navbar-item[href$="display=printextensions"]::after   { content: 'چاپ داخلی‌ها'; }
+.navbar-dropdown a.navbar-item[href$="display=weakpasswords"]::after     { content: 'گذرواژه‌های ضعیف'; }
+.navbar-dropdown a.navbar-item[href$="display=advancedsettings"]::after  { content: 'تنظیمات پیشرفته'; }
+.navbar-dropdown a.navbar-item[href$="display=iaxsettings"]::after       { content: 'تنظیمات IAX'; }
+.navbar-dropdown a.navbar-item[href$="display=logfiles_settings"]::after { content: 'تنظیمات گزارش‌ها'; }
+.navbar-dropdown a.navbar-item[href$="display=managersettings"]::after   { content: 'تنظیمات AMI'; }
+.navbar-dropdown a.navbar-item[href$="display=pjsipsettings"]::after     { content: 'تنظیمات PJSIP'; }
+.navbar-dropdown a.navbar-item[href$="display=sipsettings"]::after       { content: 'تنظیمات سیپ'; }
+.navbar-dropdown a.navbar-item[href$="display=music"]::after             { content: 'موسیقی انتظار'; }
+.navbar-dropdown a.navbar-item[href$="display=pinsets"]::after           { content: 'مجموعه‌های پین'; }
+.navbar-dropdown a.navbar-item[href$="display=outroutemsg"]::after       { content: 'پیام ازدحام'; }
+.navbar-dropdown a.navbar-item[href$="display=voicemail"]::after         { content: 'مدیریت پیامگیر'; }
+.navbar-dropdown a.navbar-item[href$="display=dialplaninjection"]::after { content: 'تزریق دیال‌پلن'; }
+.navbar-dropdown a.navbar-item[href$="display=dynroute"]::after          { content: 'مسیرهای پویا'; }
+.navbar-dropdown a.navbar-item[href$="display=trunkbalance"]::after      { content: 'توازن ترانک‌ها'; }
+/* burger mode (narrow window/iframe): same stock items, grouping and
+   scroll behavior — only the fixed 600px box goes full panel width so
+   the multicolumn engine spreads into more, shorter columns and the
+   dead space on the right disappears */
+.navbar-menu.is-active .navbar-item.has-dropdown,
+.navbar-menu.is-active .navbar-dropdown,
+.navbar-menu.is-active .navbar-dropdown .multicolumn {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+.navbar-dropdown .navbar-item:hover { background: #F3F5F9 !important; color: var(--mt-primary) !important; }
+.navbar-dropdown .navbar-item.is-active,
+.navbar-dropdown .navbar-item[data-active="true"] {
+    background: rgba(46,49,148,.08) !important;
+    color: var(--mt-primary) !important;
+    font-weight: 700;
+}
+
+/* ---------- controls ---------- */
+.input, .select select,
+input[type="text"], input[type="password"], input[type="number"], input[type="search"] {
+    height: 36px !important;
+    font-size: 13px !important;
+    font-family: inherit;
+    border-radius: 8px !important;
+    border-color: #CBD2DD !important;
+    box-shadow: none !important;
+    padding: 0 12px !important;
+}
+.input:focus, input[type="text"]:focus {
+    border-color: var(--mt-primary) !important;
+    box-shadow: 0 0 0 3px rgba(46,49,148,.12) !important;
+}
+textarea, textarea.input {
+    height: auto !important;
+    min-height: 88px !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    line-height: 1.7 !important;
+    border-radius: 8px !important;
+    border-color: #CBD2DD !important;
+}
+.button, input[type="submit"], button.button {
+    height: 36px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    padding: 0 14px !important;
+    border-width: 1px !important;
+}
+.button.is-small { height: 30px !important; font-size: 12px !important; padding: 0 10px !important; }
+.button.is-medium { height: 40px !important; }
+.button:focus { box-shadow: 0 0 0 3px rgba(46,49,148,.14) !important; }
+.button.is-primary, input[type="submit"] {
+    background: var(--mt-primary) !important;
+    border-color: var(--mt-primary) !important;
+    color: #fff !important;
+}
+.button.is-primary:hover { background: var(--mt-primary-strong) !important; }
+.button.is-danger, .is-danger {
+    background: #FFF1F2 !important;
+    color: #B42338 !important;
+    border: 1px solid #FFD9DF !important;
+}
+.button.is-link {
+    /* Bulma ships is-link as a FILLED blue button — restyle as our calm
+       secondary ghost so text stays readable */
+    background: transparent !important;
+    border: 1px solid var(--mt-border) !important;
+    color: var(--mt-primary) !important;
+}
+.button.is-link:hover {
+    background: rgba(46,49,148,.07) !important;
+    border-color: var(--mt-primary) !important;
+    color: var(--mt-primary) !important;
+}
+.radiotoggle label { border-radius: 999px !important; }
+label.is-checkbox {
+    background: #fff !important;
+    border: 1px solid #CBD2DD !important;
+    color: var(--mt-text) !important;
+    border-radius: 999px !important;
+}
+label.is-checkbox:has(input:checked), label.is-checkbox.checked {
+    background: var(--mt-primary) !important;
+    border-color: var(--mt-primary) !important;
+    color: #fff !important;
+}
+input[type="submit"] { border-radius: 6px; }
+.swal2-confirm { background: var(--mt-primary) !important; }
+.pagination-link.is-current { background: var(--mt-primary); border-color: var(--mt-primary); }
+.pagination-link, .pagination-ellipsis {
+    font-size: 13px; min-width: 32px; height: 32px; border-radius: 8px !important;
+}
+
+/* ---------- page frame ---------- */
+#page, #page_body { background: var(--mt-bg); }
+.content { padding: 20px 22px 24px; }
+
+/* ---------- the module form = a card ---------- */
+form.popover-form, .content > form {
+    display: block;
+    background: #fff !important;
+    border: 1px solid var(--mt-border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 6px 24px rgba(21,27,61,.05) !important;
+    padding: 0 !important;
+    overflow: visible !important; /* dropdowns/help escape the card */
+}
+form.popover-form > table, .content > form > table { width: 100%; border-spacing: 0; }
+form.popover-form td[colspan] h2#title, .content > form h2#title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    color: var(--mt-text) !important;
+    background: #F7F8FC;
+    border-bottom: 1px solid var(--mt-border);
+    border-radius: 15px 15px 0 0 !important;
+    margin: 0 !important;
+    padding: 14px 18px !important;
+}
+form.popover-form td[colspan] h2#title::before, .content > form h2#title::before {
+    content: '';
+    width: 4px; height: 17px;
+    border-radius: 2px;
+    background: var(--mt-accent);
+}
+#instructions {
+    display: block;
+    padding: 12px 18px 2px !important;
+    color: var(--mt-muted);
+    font-size: 12.5px;
+}
+form.popover-form tr:not(.guielToggle) td { padding-inline: 18px; }
+/* parameter rows: label column narrow, field flexible */
+form table tr > td:first-child {
+    width: 34%;
+    min-width: 210px;
+    font-weight: 500;
+    color: var(--mt-text);
+    padding: 7px 12px 7px 8px;
+    line-height: 21px;
+    vertical-align: middle;
+    text-align: start;
+}
+form table tr > td:last-child { padding: 7px 8px 7px 14px; vertical-align: middle; }
+/* section headers */
+tr.guielToggle td {
+    background: #F3F5F9 !important;
+    padding: 10px 14px 12px !important;
+}
+tr.guielToggle h5 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--mt-primary) !important;
+    margin: 0;
+    cursor: pointer;
+}
+tr.guielToggle h5 .guielToggleBut { order: 2; margin-inline-start: auto; color: var(--mt-muted); }
+/* the Persian subtitle of a collapsible section header renders as a
+   white chip on its own line inside the band — clearly separated from
+   the English title and readable against the tinted band */
+tr.guielToggle td .mt-sub {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: -moz-fit-content;
+    width: fit-content;
+    margin-top: 6px;
+    padding: 3px 9px;
+    background: #fff;
+    border: 1px solid var(--mt-border);
+    border-radius: 7px;
+    font-size: 11.5px;
+    line-height: 15px;
+    color: #5A6580;
+    direction: ltr;
+    text-align: left;
+}
+/* action footer band */
+form.popover-form tr:last-child:has([type="submit"]) td,
+.content > form tr:last-of-type:has([type="submit"]) td {
+    background: #F7F8FC;
+    border-top: 1px solid var(--mt-border);
+    border-radius: 0 0 15px 15px;
+    padding: 14px 18px !important;
+}
+form.popover-form tr:last-child:has([type="submit"]) td:first-child { text-align: start; }
+form.popover-form [type="submit"] { padding-inline: 22px !important; }
+
+/* ---------- the fixed record nav (rnav) = side card ---------- */
+nav.rnav {
+    position: fixed !important;
+    inset-inline-start: 16px !important;
+    top: 76px !important;
+    width: 240px !important;
+    box-sizing: border-box;
+    padding: 14px !important;
+    background: #fff !important;
+    border: 1px solid var(--mt-border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 6px 24px rgba(21,27,61,.06) !important;
+    max-height: calc(100vh - 100px);
+    overflow: auto;
+}
+body:has(nav.rnav) .content { margin-inline-start: 268px; }
+nav.rnav > .button,
+nav.rnav .button.is-small.is-link,
+nav.rnav #rnavadd {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100% !important;
+    height: 36px !important;
+    margin: 2px 0 10px !important;
+    background: var(--mt-primary) !important;
+    color: #fff !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+}
+nav.rnav #rnavsearch {
+    height: 32px !important;
+    font-size: 12.5px !important;
+    border-radius: 9px !important;
+    border-color: var(--mt-border) !important;
+    box-shadow: none !important;
+}
+nav.rnav a:not(.button) {
+    display: flex;
+    flex-direction: column;      /* stock label + Persian subtitle */
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 38px;
+    padding: 4px 10px !important;
+    border-radius: 8px;
+    color: #455167 !important;
+    font-size: 12.5px;
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    transition: background .14s ease, color .14s ease;
+}
+nav.rnav a:not(.button):hover { background: #F3F5F9 !important; color: var(--mt-primary) !important; }
+nav.rnav a.is-active, nav.rnav a[aria-current="page"], nav.rnav li.current > a {
+    background: rgba(46,49,148,.08) !important;
+    color: var(--mt-primary) !important;
+    font-weight: 700;
+    border-inline-start: 3px solid var(--mt-accent) !important;
+}
+nav.rnav ul, nav.rnav li { list-style: none; margin: 0; padding: 0; }
+@media (max-width: 900px) {
+    nav.rnav { position: static !important; width: 100% !important; margin-bottom: 14px; }
+    body:has(nav.rnav) .content { margin-inline-start: 0; }
+}
+
+/* ---------- bare link-stack pages (trunks etc.) — pure CSS cards ---------- */
+.content:not(:has(form, table)):has(> a:nth-of-type(3)) {
+    background: #fff;
+    border: 1px solid var(--mt-border);
+    border-radius: 16px;
+    box-shadow: 0 6px 24px rgba(21,27,61,.05);
+    padding: 0;
+    overflow: hidden;
+}
+.content:not(:has(form, table)):has(> a:nth-of-type(3)) > h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    color: var(--mt-text) !important;
+    background: #F7F8FC;
+    border-bottom: 1px solid var(--mt-border);
+    margin: 0 !important;
+    padding: 14px 18px !important;
+}
+.content:not(:has(form, table)):has(> a:nth-of-type(3)) > h2::before {
+    content: '';
+    width: 4px; height: 17px;
+    border-radius: 2px;
+    background: var(--mt-accent);
+}
+.content:not(:has(form, table)):has(> a:nth-of-type(3)) > a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 40px;
+    padding: 6px 18px;
+    border-bottom: 1px solid #EEF1F6;
+    color: #455167;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background .14s ease, color .14s ease, padding .14s ease;
+}
+.content:not(:has(form, table)):has(> a:nth-of-type(3)) > a::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #C6CEDF;
+    flex: 0 0 6px;
+    transition: background .14s ease;
+}
+.content:not(:has(form, table)):has(> a:nth-of-type(3)) > a:last-of-type { border-bottom: 0; }
+.content:not(:has(form, table)):has(> a:nth-of-type(3)) > a:first-of-type {
+    background: rgba(46,49,148,.05);
+    color: var(--mt-primary);
+    font-weight: 700;
+}
+.content:not(:has(form, table)):has(> a:nth-of-type(3)) > a:hover {
+    background: #F3F5F9;
+    color: var(--mt-primary);
+    padding-inline-start: 22px;
+}
+.content:not(:has(form, table)):has(> a:nth-of-type(3)) > a:hover::before { background: var(--mt-accent); }
+
+/* ---------- record tables = cards ---------- */
+.content .table-container,
+.content > table.table, .content > div > table.table {
+    background: #fff;
+    border: 1px solid var(--mt-border);
+    border-radius: 16px;
+    overflow-x: auto;
+    box-shadow: 0 6px 24px rgba(21,27,61,.05);
+}
+.content table.table th, .content table.table tr:first-child td strong {
+    background: #F7F8FC;
+    color: var(--mt-primary);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 12px;
+    text-align: start;
+    border-bottom: 1px solid var(--mt-border);
+}
+.content table.table td { padding: 8px 12px; border-bottom: 1px solid #EEF1F6; }
+.content table.table tbody tr:hover td { background: #FAFBFE; }
+table.table td { border-color: #EEF1F6; }
+
+/* ---------- chosen selects ---------- */
+.chosen-container-single .chosen-single {
+    height: 36px !important;
+    line-height: 34px !important;
+    border-radius: 8px !important;
+    border-color: #CBD2DD !important;
+    background: #fff !important;
+    font-size: 13px !important;
+    padding: 0 12px !important;
+}
+.chosen-container-single .chosen-single div b { background-position-y: 8px !important; }
+.chosen-container-active.chosen-with-drop .chosen-single { border-color: var(--mt-primary) !important; }
+.chosen-drop {
+    border-radius: 10px !important;
+    border-color: var(--mt-border) !important;
+    box-shadow: 0 12px 32px rgba(21,27,61,.14) !important;
+}
+.chosen-drop .chosen-results li { font-size: 13px; padding: 8px 12px; }
+
+/* ---------- the "?" help marks (stock English help text) ---------- */
+.infohelp {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px; height: 17px;
+    margin-inline-start: 7px;
+    border-radius: 50%;
+    background: rgba(46,49,148,.10);
+    color: var(--mt-primary) !important;
+    font-size: 11px !important;
+    font-weight: 800;
+    line-height: 1;
+    cursor: help;
+    vertical-align: middle;
+}
+.infohelp:hover { background: var(--mt-primary); color: #fff !important; }
+.infohelp > span {
+    background: var(--mt-navy) !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 12px 32px rgba(11,21,38,.35) !important;
+    color: #EDF1FA !important;
+    font-size: 12.5px !important;
+    font-weight: 400 !important;
+    line-height: 1.8 !important;
+    padding: 12px 16px !important;
+    width: 340px !important;
+    max-width: 78vw;
+    text-align: left !important;
+    white-space: normal !important;
+    z-index: 30060 !important;
+}
+
+/* ---------- jQuery-UI panels / modals ---------- */
+.ui-widget.ui-widget-content, .infobox {
+    background: #fff !important;
+    border: 1px solid var(--mt-border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 6px 24px rgba(21,27,61,.05) !important;
+    background-image: none !important;
+}
+.ui-widget-header {
+    background: #F7F8FC !important;
+    color: var(--mt-text) !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--mt-border) !important;
+    border-radius: 16px 16px 0 0 !important;
+    background-image: none !important;
+    font-weight: 700 !important;
+}
+
+/* ---------- stats sidebar is served by the portal dashboard ---------- */
+#sysinfo-right { display: none !important; }
+#dashboard #aststats { display: none !important; }
+#dashboard { display: block !important; }
+#sysinfo-left { width: 100% !important; max-width: none !important; float: none !important; }
+
+/* ---------- footer: one calm brand line (source text untouched) ---------- */
+div.footer, .footer, footer {
+    background: transparent !important;
+    border: 0 !important;
+    padding: 18px 12px !important;
+    text-align: center;
+    color: #929BAD;
+    font-size: 0 !important;
+}
+div.footer::after, .footer::after {
+    content: 'MyTel PBX · v2.12 · GPL';
+    font-family: inherit;
+    font-size: 12px;
+}
+
+/* ---------- per-page collapsible help panel (sub.js DESC) ---------- */
+.mt-pagedesc {
+    direction: rtl;
+    text-align: left;              /* chip hugs the English title's edge */
+    margin: 7px 14px 2px 0;
+}
+.mt-pagedesc-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'VazirmatnSub', 'Vazirmatn', Tahoma, sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--mt-primary) !important;
+    background: #fff;
+    border: 1px solid #CBD2DD;
+    border-radius: 8px;
+    padding: 4px 11px;
+    cursor: pointer;
+    transition: background .14s ease, border-color .14s ease;
+}
+.mt-pagedesc-toggle:hover { background: #EEF1FA; border-color: var(--mt-primary); }
+.mt-pd-chev {
+    width: 7px; height: 7px;
+    border-inline-end: 2px solid var(--mt-primary);
+    border-bottom: 2px solid var(--mt-primary);
+    transform: rotate(45deg);
+    transition: transform .18s ease;
+}
+.mt-pagedesc.open .mt-pd-chev { transform: rotate(-135deg); }
+.mt-pagedesc-panel {
+    display: none;
+    margin-top: 7px;
+    text-align: right;
+    background: #fff;
+    border: 1px solid var(--mt-border);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(21,27,61,.06);
+    padding: 12px 16px;
+    font-family: 'VazirmatnSub', 'Vazirmatn', Tahoma, sans-serif;
+    font-size: 12.5px;
+    line-height: 2;
+    color: var(--mt-text);
+    max-width: 760px;
+}
+.mt-pagedesc.open .mt-pagedesc-panel { display: block; }
+.mt-pd-what { margin: 0 0 8px; }
+.mt-pd-h {
+    font-weight: 700;
+    color: var(--mt-primary);
+    font-size: 12px;
+    margin: 6px 0 2px;
+}
+.mt-pd-notes { margin: 0 0 8px; padding-inline-start: 18px; }
+.mt-pd-notes li { margin-bottom: 2px; }
+.mt-pd-example {
+    background: #F7F8FC;
+    border: 1px dashed var(--mt-border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #455167;
+}
+
+/* ---------- misc ---------- */
+.navbar-burger { color: #fff; }
+.fpbx-tabs li a, ul.tabs li a { border-radius: 9px 9px 0 0; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #C6CEDF; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #9AA8C4; }
